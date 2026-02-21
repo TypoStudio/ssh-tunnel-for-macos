@@ -46,6 +46,18 @@ struct MenuBarView: View {
         }
         .disabled(!store.configs.contains { status.state(for: $0.id).isActive })
 
+        Button(String(localized: "Check for Updates...")) {
+            Task {
+                if let info = await UpdateService.checkForUpdate() {
+                    NSApp.activate(ignoringOtherApps: true)
+                    showUpdateAlert(info: info)
+                } else {
+                    NSApp.activate(ignoringOtherApps: true)
+                    showUpToDateAlert()
+                }
+            }
+        }
+
         SettingsLink {
             Text(String(localized: "Settings..."))
         }

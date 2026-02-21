@@ -35,6 +35,14 @@ struct SSHTunnelApp: App {
                             NSApp.activate(ignoringOtherApps: true)
                         }
                     }
+                    if settings.autoCheckForUpdates {
+                        Task {
+                            if let info = await UpdateService.checkForUpdate() {
+                                NSApp.activate(ignoringOtherApps: true)
+                                showUpdateAlert(info: info)
+                            }
+                        }
+                    }
                 }
         }
 

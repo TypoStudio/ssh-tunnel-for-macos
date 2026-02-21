@@ -23,7 +23,7 @@ struct SettingsView: View {
                 }
                 .tag(SettingsTab.about)
         }
-        .frame(width: 360, height: 200)
+        .frame(width: 360, height: 260)
     }
 }
 
@@ -31,14 +31,58 @@ struct SettingsView: View {
 
 private struct GeneralSettingsView: View {
     @Bindable var settings: AppSettings
+    @State private var updateStatus: UpdateCheckStatus = .idle
 
     var body: some View {
         Form {
             Toggle(String(localized: "Launch at Login"), isOn: $settings.launchAtLogin)
             Toggle(String(localized: "Open Manager on Launch"), isOn: $settings.openManagerOnLaunch)
+            Toggle(String(localized: "Check for Updates Automatically"), isOn: $settings.autoCheckForUpdates)
+
+            HStack {
+                Button(String(localized: "Check Now")) {
+                    checkNow()
+                }
+                .disabled(updateStatus == .checking)
+
+                switch updateStatus {
+                case .checking:
+                    ProgressView()
+                        .controlSize(.small)
+                case .available(let version):
+                    Text(String(localized: "v\(version) available"))
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                case .upToDate:
+                    Text(String(localized: "You're up to date."))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                case .idle:
+                    EmptyView()
+                }
+            }
         }
         .formStyle(.grouped)
     }
+
+    private func checkNow() {
+        updateStatus = .checking
+        Task {
+            if let info = await UpdateService.checkForUpdate() {
+                updateStatus = .available(version: info.version)
+                showUpdateAlert(info: info)
+            } else {
+                updateStatus = .upToDate
+            }
+        }
+    }
+}
+
+private enum UpdateCheckStatus: Equatable {
+    case idle
+    case checking
+    case available(version: String)
+    case upToDate
 }
 
 // MARK: - About

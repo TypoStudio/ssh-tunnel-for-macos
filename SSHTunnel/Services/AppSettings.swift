@@ -9,10 +9,19 @@ final class AppSettings {
     var openManagerOnLaunch: Bool {
         didSet { UserDefaults.standard.set(openManagerOnLaunch, forKey: "openManagerOnLaunch") }
     }
+    var autoCheckForUpdates: Bool {
+        didSet { UserDefaults.standard.set(autoCheckForUpdates, forKey: "autoCheckForUpdates") }
+    }
 
     init() {
         self.openManagerOnLaunch = UserDefaults.standard.bool(forKey: "openManagerOnLaunch")
         self.launchAtLogin = SMAppService.mainApp.status == .enabled
+
+        if UserDefaults.standard.object(forKey: "autoCheckForUpdates") == nil {
+            self.autoCheckForUpdates = true
+        } else {
+            self.autoCheckForUpdates = UserDefaults.standard.bool(forKey: "autoCheckForUpdates")
+        }
     }
 
     private func updateLaunchAtLogin() {

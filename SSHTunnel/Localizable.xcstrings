@@ -27,6 +27,16 @@
     "%lld" : {
 
     },
+    "A new version %@ is available." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새로운 %@ 버전을 사용할 수 있습니다."
+          }
+        }
+      }
+    },
     "About" : {
       "localizations" : {
         "ko" : {
@@ -174,6 +184,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "취소"
+          }
+        }
+      }
+    },
+    "Check for Updates Automatically" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자동으로 업데이트 확인"
+          }
+        }
+      }
+    },
+    "Check for Updates..." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 확인..."
+          }
+        }
+      }
+    },
+    "Check Now" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지금 확인"
           }
         }
       }
@@ -412,6 +452,47 @@
         }
       }
     },
+    "Download" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다운로드"
+          }
+        }
+      }
+    },
+    "Download Manually" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "수동으로 다운로드"
+          }
+        }
+      }
+    },
+    "Downloading %@..." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 다운로드 중..."
+          }
+        }
+      }
+    },
+    "Downloading %@... (%lld%%)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 다운로드 중... (%2$lld%%)"
+          }
+        }
+      }
+    },
     "Dynamic (-D)" : {
       "localizations" : {
         "ko" : {
@@ -592,6 +673,36 @@
         }
       }
     },
+    "Install and Restart" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "설치 후 재시작"
+          }
+        }
+      }
+    },
+    "Installing %@..." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 설치 중..."
+          }
+        }
+      }
+    },
+    "Installing Update..." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 설치 중..."
+          }
+        }
+      }
+    },
     "Invalid share string format." : {
       "localizations" : {
         "ko" : {
@@ -638,6 +749,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "모두 종료"
+          }
+        }
+      }
+    },
+    "Later" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "나중에"
           }
         }
       }
@@ -861,6 +982,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "설정된 터널 없음"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인"
           }
         }
       }
@@ -1234,6 +1365,16 @@
         }
       }
     },
+    "SSH Tunnel Manager %@" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSH Tunnel Manager %@"
+          }
+        }
+      }
+    },
     "Tunnel Management" : {
       "localizations" : {
         "ko" : {
@@ -1267,6 +1408,26 @@
     "Type" : {
 
     },
+    "Update Available" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 가능"
+          }
+        }
+      }
+    },
+    "Update Failed" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "업데이트 실패"
+          }
+        }
+      }
+    },
     "Use text editing mode for raw config editing." : {
       "localizations" : {
         "ko" : {
@@ -1287,6 +1448,16 @@
         }
       }
     },
+    "v%@ available" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "v%@ 사용 가능"
+          }
+        }
+      }
+    },
     "Value" : {
       "localizations" : {
         "ko" : {
@@ -1303,6 +1474,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "버전 %@"
+          }
+        }
+      }
+    },
+    "You're up to date." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최신 버전입니다."
           }
         }
       }
