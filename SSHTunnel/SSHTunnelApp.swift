@@ -64,6 +64,13 @@ struct SSHTunnelApp: App {
                 .frame(minWidth: 600, minHeight: 400)
         }
         .defaultSize(width: 750, height: 500)
+
+        WindowGroup(String(localized: "Connection Log"), id: "log", for: UUID.self) { $configId in
+            if let configId {
+                LogView(configId: configId, processManager: processManager)
+            }
+        }
+        .defaultSize(width: 550, height: 400)
     }
 
     private func autoConnectOnLaunch() {

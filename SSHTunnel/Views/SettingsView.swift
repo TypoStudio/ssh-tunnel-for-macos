@@ -109,6 +109,10 @@ private struct AboutSettingsView: View {
                 Spacer()
             }
 
+            Text("Copyright (c) 2026 TypoStudio (typ0s2d10@gmail.com)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
             Divider()
 
             HStack(spacing: 12) {

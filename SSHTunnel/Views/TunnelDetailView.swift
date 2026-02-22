@@ -9,7 +9,7 @@ struct TunnelDetailView: View {
     @State private var draft: SSHTunnelConfig = SSHTunnelConfig()
     @State private var showCopied = false
     @State private var password: String = ""
-    @State private var showLog = false
+    @Environment(\.openWindow) private var openWindow
     @State private var showSSHConfig = false
     @State private var portConflictAlert = false
     @State private var conflictingPorts: [UInt16] = []
@@ -127,16 +127,16 @@ struct TunnelDetailView: View {
                 Button {
                     showSSHConfig = true
                 } label: {
-                    Image(systemName: "list.bullet.rectangle")
+                    Image(systemName: "doc.text")
                 }
                 .help(String(localized: "Load from SSH Config"))
             }
 
             ToolbarItem(placement: .automatic) {
                 Button {
-                    showLog.toggle()
+                    openWindow(id: "log", value: configId)
                 } label: {
-                    Image(systemName: "doc.text")
+                    Image(systemName: "list.bullet.rectangle")
                 }
                 .help(String(localized: "Connection Log"))
             }
@@ -156,9 +156,6 @@ struct TunnelDetailView: View {
                 }
                 .disabled(draft.host.isEmpty || draft.username.isEmpty || draft.tunnels.isEmpty)
             }
-        }
-        .sheet(isPresented: $showLog) {
-            LogView(configId: configId, processManager: processManager)
         }
         .sheet(isPresented: $showSSHConfig) {
             SSHConfigPickerView { host in
@@ -309,23 +306,48 @@ struct SSHConfigPickerView: View {
 struct LogView: View {
     let configId: UUID
     let processManager: SSHProcessManager
-    @Environment(\.dismiss) private var dismiss
+
+    private var log: String {
+        processManager.logs[configId] ?? String(localized: "No log available.")
+    }
 
     var body: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text(String(localized: "Connection Log"))
-                    .font(.headline)
-                Spacer()
+        VStack(spacing: 0) {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    Text(log)
+                        .font(.system(.caption, design: .monospaced))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                        .padding(8)
+                    Color.clear
+                        .frame(height: 0)
+                        .id("bottom")
+                }
+                .onChange(of: log) { _, _ in
+                    withAnimation {
+                        proxy.scrollTo("bottom")
+                    }
+                }
+                .onAppear {
+                    proxy.scrollTo("bottom")
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(.background.secondary)
+        .toolbar {
+            ToolbarItem(placement: .automatic) {
                 Button {
-                    let log = processManager.logs[configId] ?? ""
+                    let text = processManager.logs[configId] ?? ""
                     NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(log, forType: .string)
+                    NSPasteboard.general.setString(text, forType: .string)
                 } label: {
                     Image(systemName: "doc.on.doc")
                 }
                 .help(String(localized: "Copy Log"))
-
+            }
+            ToolbarItem(placement: .automatic) {
                 Button {
                     processManager.logs[configId] = ""
                 } label: {
@@ -333,24 +355,6 @@ struct LogView: View {
                 }
                 .help(String(localized: "Clear Log"))
             }
-
-            ScrollView {
-                Text(processManager.logs[configId] ?? String(localized: "No log available."))
-                    .font(.system(.caption, design: .monospaced))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .textSelection(.enabled)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.background.secondary)
-            .clipShape(RoundedRectangle(cornerRadius: 4))
-
-            HStack {
-                Spacer()
-                Button(String(localized: "Close")) { dismiss() }
-                    .keyboardShortcut(.cancelAction)
-            }
         }
-        .padding()
-        .frame(width: 550, height: 400)
     }
 }

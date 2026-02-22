@@ -154,7 +154,7 @@ struct TunnelListView: View {
             Button {
                 showProcesses = true
             } label: {
-                Image(systemName: "terminal")
+                Image(systemName: "cpu")
             }
             .help(String(localized: "Running SSH Processes"))
         }

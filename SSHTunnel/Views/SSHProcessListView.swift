@@ -21,6 +21,7 @@ struct SSHProcessListView: View {
                     Image(systemName: "arrow.clockwise")
                 }
                 .buttonStyle(.borderless)
+                .focusable(false)
             }
 
             if processes.isEmpty {
