@@ -79,6 +79,7 @@ struct TunnelDetailView: View {
             Section(String(localized: "Options")) {
                 Toggle(String(localized: "Auto-connect on launch"), isOn: $draft.autoConnect)
                 Toggle(String(localized: "Disconnect on quit"), isOn: $draft.disconnectOnQuit)
+                Toggle(String(localized: "Auto-reconnect on disconnect"), isOn: $draft.autoReconnect)
                 TextField(String(localized: "Additional SSH Arguments"), text: $draft.additionalArgs)
             }
 
