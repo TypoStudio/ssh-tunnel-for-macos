@@ -1,5 +1,6 @@
 import Foundation
 import AppKit
+import Network
 
 @Observable
 final class SSHProcessManager {
@@ -9,8 +10,28 @@ final class SSHProcessManager {
     var status: TunnelStatus
     var logs: [UUID: String] = [:]
 
+    // Auto-reconnect state
+    private var manualDisconnects = Set<UUID>()
+    private var pendingReconnect = Set<UUID>()
+    private var reconnectConfigs: [UUID: SSHTunnelConfig] = [:]
+    private var reconnectTimers: [UUID: DispatchWorkItem] = [:]
+    private var retryCounts: [UUID: Int] = [:]
+    private let networkMonitor = NWPathMonitor()
+    private var isNetworkAvailable = true
+
     init(status: TunnelStatus) {
         self.status = status
+        networkMonitor.pathUpdateHandler = { [weak self] path in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                let wasAvailable = self.isNetworkAvailable
+                self.isNetworkAvailable = path.status == .satisfied
+                if !wasAvailable && path.status == .satisfied {
+                    self.reconnectPending()
+                }
+            }
+        }
+        networkMonitor.start(queue: DispatchQueue.global(qos: .utility))
     }
 
     /// Returns local ports that are already in use
@@ -39,6 +60,13 @@ final class SSHProcessManager {
     func connect(_ config: SSHTunnelConfig) {
         let id = config.id
         guard !status.state(for: id).isActive else { return }
+
+        reconnectConfigs[id] = config
+        pendingReconnect.remove(id)
+        reconnectTimers[id]?.cancel()
+        reconnectTimers.removeValue(forKey: id)
+        retryCounts.removeValue(forKey: id)
+        manualDisconnects.remove(id)
 
         status.states[id] = .connecting
 
@@ -88,7 +116,17 @@ final class SSHProcessManager {
                     self.status.states[id] = .error(String(localized: "Connection failed (exit \(proc.terminationStatus))"))
                 } else {
                     self.status.states[id] = .disconnected
+                    // Auto-reconnect on unexpected disconnect
+                    if !self.manualDisconnects.contains(id),
+                       let config = self.reconnectConfigs[id],
+                       config.autoReconnect {
+                        self.pendingReconnect.insert(id)
+                        if self.isNetworkAvailable {
+                            self.scheduleReconnect(id)
+                        }
+                    }
                 }
+                self.manualDisconnects.remove(id)
             }
         }
 
@@ -110,6 +148,12 @@ final class SSHProcessManager {
     }
 
     func disconnect(_ configId: UUID) {
+        manualDisconnects.insert(configId)
+        pendingReconnect.remove(configId)
+        reconnectTimers[configId]?.cancel()
+        reconnectTimers.removeValue(forKey: configId)
+        retryCounts.removeValue(forKey: configId)
+
         connectTimers[configId]?.cancel()
         connectTimers.removeValue(forKey: configId)
 
@@ -174,6 +218,39 @@ final class SSHProcessManager {
 
         args.append("\(config.username)@\(config.host)")
         return args
+    }
+
+    // MARK: - Auto-reconnect
+
+    private func scheduleReconnect(_ id: UUID) {
+        reconnectTimers[id]?.cancel()
+        let count = retryCounts[id, default: 0]
+        let delays = [3.0, 5.0, 10.0, 30.0, 60.0]
+        let delay = delays[min(count, delays.count - 1)]
+        let timer = DispatchWorkItem { [weak self] in
+            guard let self,
+                  self.pendingReconnect.contains(id),
+                  let config = self.reconnectConfigs[id] else { return }
+            self.retryCounts[id] = count + 1
+            self.connect(config)
+        }
+        reconnectTimers[id] = timer
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: timer)
+    }
+
+    private func reconnectPending() {
+        for id in pendingReconnect {
+            retryCounts[id] = 0
+            scheduleReconnect(id)
+        }
+    }
+
+    func cancelReconnect(_ configId: UUID) {
+        pendingReconnect.remove(configId)
+        reconnectTimers[configId]?.cancel()
+        reconnectTimers.removeValue(forKey: configId)
+        retryCounts.removeValue(forKey: configId)
+        reconnectConfigs.removeValue(forKey: configId)
     }
 
     // MARK: - SSH_ASKPASS helper

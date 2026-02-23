@@ -148,6 +148,16 @@
         }
       }
     },
+    "Auto-reconnect on disconnect" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연결 끊김 시 자동 재연결"
+          }
+        }
+      }
+    },
     "Auto-connect on launch and disconnect on quit per tunnel." : {
       "localizations" : {
         "ko" : {

@@ -68,6 +68,7 @@ struct SSHTunnelConfig: Codable, Identifiable, Hashable {
     var tunnels: [TunnelEntry] = []
     var autoConnect: Bool = false
     var disconnectOnQuit: Bool = true
+    var autoReconnect: Bool = true
     var additionalArgs: String = ""
 
     init(from decoder: Decoder) throws {
@@ -82,6 +83,7 @@ struct SSHTunnelConfig: Codable, Identifiable, Hashable {
         tunnels = try c.decode([TunnelEntry].self, forKey: .tunnels)
         autoConnect = try c.decodeIfPresent(Bool.self, forKey: .autoConnect) ?? false
         disconnectOnQuit = try c.decodeIfPresent(Bool.self, forKey: .disconnectOnQuit) ?? true
+        autoReconnect = try c.decodeIfPresent(Bool.self, forKey: .autoReconnect) ?? true
         additionalArgs = try c.decodeIfPresent(String.self, forKey: .additionalArgs) ?? ""
     }
 
