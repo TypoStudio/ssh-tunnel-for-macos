@@ -1,6 +1,6 @@
 <div align="center">
-    <img src="SSHTunnel/Assets.xcassets/AppIcon.appiconset/icon_256.png" width="200" height="200">
-    <h1>SSH Tunnel Manager</h1>
+    <img src="assets/title.png" alt="SSH Tunnel Manager" width="100%">
+    <br><br>
     <img src="screenshots/screenshot-1.png" width="800">
 </div>
 
@@ -12,6 +12,18 @@ A lightweight macOS menu bar app for managing SSH tunnels. Create, connect, and 
 [![Download](https://img.shields.io/badge/download-latest-brightgreen?style=flat-square)](https://github.com/TypoStudio/ssh-tunnel-for-macos/releases)
 
 ## Install
+
+### Homebrew
+
+```sh
+brew install --cask typostudio/tap/sshtunnel
+```
+
+The app is unsigned, so if the first launch is blocked by Gatekeeper, clear the quarantine attribute once:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/SSHTunnel.app
+```
 
 ### Manual Installation
 
@@ -104,7 +116,17 @@ macOS 메뉴 막대에서 SSH 터널을 간편하게 관리하는 네이티브 �
 
 ### 설치
 
-[Releases](https://github.com/TypoStudio/ssh-tunnel-for-macos/releases) 페이지에서 최신 `.dmg` 파일을 다운로드하고, `SSHTunnel.app`을 `응용 프로그램` 폴더로 드래그하세요.
+```sh
+brew install --cask typostudio/tap/sshtunnel
+```
+
+서명되지 않은 앱이라 첫 실행이 Gatekeeper에 막히면 격리 속성을 한 번 제거하세요:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/SSHTunnel.app
+```
+
+또는 [Releases](https://github.com/TypoStudio/ssh-tunnel-for-macos/releases) 페이지에서 최신 `.dmg` 파일을 다운로드하고, `SSHTunnel.app`을 `응용 프로그램` 폴더로 드래그하세요.
 
 ### 주요 기능
 
