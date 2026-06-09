@@ -111,12 +111,22 @@ final class SSHProcessManager {
                 self.pipes[id]?.fileHandleForReading.readabilityHandler = nil
                 self.pipes.removeValue(forKey: id)
 
+                let displayName = self.reconnectConfigs[id]?.displayLabel ?? ""
+                let priorState = self.status.state(for: id)
                 if proc.terminationStatus == 0 {
                     self.status.states[id] = .disconnected
-                } else if self.status.state(for: id) == .connecting {
-                    self.status.states[id] = .error(String(localized: "Connection failed (exit \(proc.terminationStatus))"))
+                    if priorState == .connected {
+                        NotificationService.notifyDisconnected(name: displayName)
+                    }
+                } else if priorState == .connecting {
+                    let reason = String(localized: "Connection failed (exit \(proc.terminationStatus))")
+                    self.status.states[id] = .error(reason)
+                    NotificationService.notifyFailed(name: displayName, reason: reason)
                 } else {
                     self.status.states[id] = .disconnected
+                    if priorState == .connected {
+                        NotificationService.notifyDisconnected(name: displayName)
+                    }
                     // Auto-reconnect on unexpected disconnect
                     if !self.manualDisconnects.contains(id),
                        let config = self.reconnectConfigs[id],
@@ -143,11 +153,16 @@ final class SSHProcessManager {
             let timer = DispatchWorkItem { [weak self] in
                 guard let self, let proc = self.processes[id], proc.isRunning else { return }
                 self.status.states[id] = .connected
+                NotificationService.notifyConnected(name: self.reconnectConfigs[id]?.displayLabel ?? "")
             }
             connectTimers[id] = timer
             DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: timer)
         } catch {
             status.states[id] = .error(error.localizedDescription)
+            NotificationService.notifyFailed(
+                name: reconnectConfigs[id]?.displayLabel ?? "",
+                reason: error.localizedDescription
+            )
         }
     }
 

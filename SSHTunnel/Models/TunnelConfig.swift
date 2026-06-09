@@ -71,6 +71,10 @@ struct SSHTunnelConfig: Codable, Identifiable, Hashable {
     var autoReconnect: Bool = true
     var additionalArgs: String = ""
 
+    var displayLabel: String {
+        name.isEmpty ? host : name
+    }
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(UUID.self, forKey: .id)

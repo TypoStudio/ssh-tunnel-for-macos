@@ -318,6 +318,26 @@
         }
       }
     },
+    "Connection closed." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연결이 종료되었습니다."
+          }
+        }
+      }
+    },
+    "Connection established." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연결되었습니다."
+          }
+        }
+      }
+    },
     "Connection failed (exit %d)" : {
 
     },
@@ -1378,6 +1398,16 @@
         }
       }
     },
+    "Show Connection Notifications" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연결 알림 표시"
+          }
+        }
+      }
+    },
     "SSH Config" : {
       "localizations" : {
         "ko" : {
@@ -1404,6 +1434,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "SSH Tunnel Manager %@"
+          }
+        }
+      }
+    },
+    "Tunnel Connected" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "터널 연결됨"
+          }
+        }
+      }
+    },
+    "Tunnel Disconnected" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "터널 해제됨"
+          }
+        }
+      }
+    },
+    "Tunnel Failed" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "터널 연결 실패"
           }
         }
       }

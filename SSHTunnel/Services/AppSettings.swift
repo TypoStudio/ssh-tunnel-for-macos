@@ -12,6 +12,9 @@ final class AppSettings {
     var autoCheckForUpdates: Bool {
         didSet { UserDefaults.standard.set(autoCheckForUpdates, forKey: "autoCheckForUpdates") }
     }
+    var notificationsEnabled: Bool {
+        didSet { UserDefaults.standard.set(notificationsEnabled, forKey: "notificationsEnabled") }
+    }
 
     init() {
         self.openManagerOnLaunch = UserDefaults.standard.bool(forKey: "openManagerOnLaunch")
@@ -21,6 +24,12 @@ final class AppSettings {
             self.autoCheckForUpdates = true
         } else {
             self.autoCheckForUpdates = UserDefaults.standard.bool(forKey: "autoCheckForUpdates")
+        }
+
+        if UserDefaults.standard.object(forKey: "notificationsEnabled") == nil {
+            self.notificationsEnabled = true
+        } else {
+            self.notificationsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
         }
     }
 

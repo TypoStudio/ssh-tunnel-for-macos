@@ -37,6 +37,10 @@ private struct GeneralSettingsView: View {
         Form {
             Toggle(String(localized: "Launch at Login"), isOn: $settings.launchAtLogin)
             Toggle(String(localized: "Open Manager on Launch"), isOn: $settings.openManagerOnLaunch)
+            Toggle(String(localized: "Show Connection Notifications"), isOn: $settings.notificationsEnabled)
+                .onChange(of: settings.notificationsEnabled) { _, newValue in
+                    if newValue { NotificationService.requestAuthorization() }
+                }
             Toggle(String(localized: "Check for Updates Automatically"), isOn: $settings.autoCheckForUpdates)
 
             HStack {

@@ -26,6 +26,9 @@ struct SSHTunnelApp: App {
             Image(systemName: status.hasAnyConnection ? "light.beacon.max.fill" : "light.beacon.max")
                 .onAppear {
                     // label onAppear fires once at app launch
+                    if settings.notificationsEnabled {
+                        NotificationService.requestAuthorization()
+                    }
                     autoConnectOnLaunch()
                     if settings.openManagerOnLaunch {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
