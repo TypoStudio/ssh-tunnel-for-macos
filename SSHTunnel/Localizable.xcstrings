@@ -47,6 +47,16 @@
         }
       }
     },
+    "Add" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추가"
+          }
+        }
+      }
+    },
     "Add a new tunnel with + or paste a share string with ⌘V." : {
       "localizations" : {
         "ko" : {
@@ -78,12 +88,32 @@
         }
       }
     },
+    "Add from CLI" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CLI에서 추가"
+          }
+        }
+      }
+    },
     "Add Host" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "호스트 추가"
+          }
+        }
+      }
+    },
+    "Add Port Forwarding from CLI" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CLI에서 포트 포워딩 추가"
           }
         }
       }
@@ -736,12 +766,12 @@
         }
       }
     },
-    "Invalid share string format." : {
+    "Invalid share string or ssh command." : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "잘못된 공유 문자열 형식입니다."
+            "value" : "잘못된 공유 문자열 또는 ssh 명령입니다."
           }
         }
       }
@@ -925,6 +955,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "새 터널"
+          }
+        }
+      }
+    },
+    "No forwarding rules found." : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "포워딩 규칙을 찾을 수 없습니다."
           }
         }
       }
@@ -1130,6 +1170,16 @@
         }
       }
     },
+    "Paste a share string or ssh command below:" : {
+      "localizations" : {
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아래에 공유 문자열 또는 ssh 명령을 붙여넣으세요:"
+          }
+        }
+      }
+    },
     "Paste share string to import" : {
       "localizations" : {
         "ko" : {
@@ -1140,12 +1190,12 @@
         }
       }
     },
-    "Paste the share string below:" : {
+    "Paste ssh forwarding options, for example: -L 8080:localhost:80 -D 1080" : {
       "localizations" : {
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "아래에 공유 문자열을 붙여넣으세요:"
+            "value" : "ssh 포워딩 옵션을 붙여넣으세요. 예: -L 8080:localhost:80 -D 1080"
           }
         }
       }

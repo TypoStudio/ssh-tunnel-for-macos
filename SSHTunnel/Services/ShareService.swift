@@ -65,7 +65,10 @@ enum ShareService {
         }
 
         let lines = raw.components(separatedBy: .newlines).map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-        guard let header = lines.first, header.hasPrefix("sshtunnel://") else { return nil }
+        guard let header = lines.first, header.hasPrefix("sshtunnel://") else {
+            // Not a share string: fall back to parsing an ssh command line.
+            return parseCLI(raw)
+        }
 
         // Parse: sshtunnel://user@host:port/name
         let uri = String(header.dropFirst("sshtunnel://".count))
@@ -147,5 +150,217 @@ enum ShareService {
         var config = try? JSONDecoder().decode(SSHTunnelConfig.self, from: data)
         config?.id = UUID()
         return config
+    }
+
+    // MARK: - CLI parsing
+
+    /// Options that take a separate value which is preserved verbatim in `additionalArgs`.
+    private static let passthroughValueOptions: Set<String> = [
+        "-b", "-c", "-E", "-e", "-F", "-I", "-J", "-m", "-O", "-Q", "-S", "-W", "-w"
+    ]
+
+    /// Parses an `ssh` command line (the format produced by `buildCLI`) into a config.
+    static func parseCLI(_ input: String) -> SSHTunnelConfig? {
+        var tokens = tokenize(input)
+        if let first = tokens.first,
+           first == "ssh" || first.hasSuffix("/ssh") || first.lowercased().hasSuffix("ssh.exe") {
+            tokens.removeFirst()
+        }
+        guard !tokens.isEmpty else { return nil }
+
+        var config = SSHTunnelConfig()
+        var extra: [String] = []
+        var destination: String?
+        var index = 0
+
+        while index < tokens.count {
+            let token = tokens[index]
+            index += 1
+
+            guard token.hasPrefix("-"), token.count > 1 else {
+                // First bare token is the destination; anything after it is a remote command.
+                if destination == nil && !token.isEmpty { destination = token }
+                continue
+            }
+
+            let flag = String(token.prefix(2))
+            let inline = String(token.dropFirst(2))
+
+            func nextValue() -> String? {
+                if !inline.isEmpty { return inline }
+                guard index < tokens.count else { return nil }
+                let value = tokens[index]
+                index += 1
+                return value
+            }
+
+            switch flag {
+            case "-p":
+                if let value = nextValue(), let port = UInt16(value) { config.port = port }
+            case "-i":
+                if let value = nextValue() {
+                    config.authMethod = .identityFile
+                    config.identityFile = value
+                }
+            case "-l":
+                if let value = nextValue() { config.username = value }
+            case "-L", "-R", "-D":
+                if let type = forwardType(for: flag),
+                   let value = nextValue(),
+                   let entry = parseForwardArgument(value, type: type) {
+                    config.tunnels.append(entry)
+                }
+            case "-o":
+                if let value = nextValue() {
+                    if value.hasPrefix("PreferredAuthentications=") && value.contains("password") {
+                        config.authMethod = .password
+                    } else {
+                        extra += ["-o", value]
+                    }
+                }
+            case "-N", "-v":
+                break // always applied when launching
+            default:
+                if passthroughValueOptions.contains(flag), let value = nextValue() {
+                    extra += [flag, value]
+                } else {
+                    extra.append(token)
+                }
+            }
+        }
+
+        // A tunnel command without any forwarding rule is not a tunnel config.
+        guard var target = destination, !config.tunnels.isEmpty else { return nil }
+        if target.hasPrefix("ssh://") { target = String(target.dropFirst("ssh://".count)) }
+        if let atIndex = target.lastIndex(of: "@") {
+            config.username = String(target[target.startIndex..<atIndex])
+            target = String(target[target.index(after: atIndex)...])
+        }
+        let hostComponents = target.split(separator: ":")
+        if hostComponents.count == 2, let port = UInt16(hostComponents[1]) {
+            config.port = port
+            target = String(hostComponents[0])
+        }
+        guard !target.isEmpty else { return nil }
+
+        config.host = target
+        config.name = target
+        config.additionalArgs = extra.joined(separator: " ")
+        return config
+    }
+
+    /// Parses forwarding rules out of CLI-style text. Accepts `-L 8080:localhost:80`,
+    /// `-D1080`, share lines like `L:8080:localhost:80`, and a bare `8080:localhost:80`
+    /// (treated as local). Non-forwarding tokens are ignored.
+    static func parseForwardingEntries(_ input: String) -> [TunnelEntry] {
+        let tokens = tokenize(input)
+        var entries: [TunnelEntry] = []
+        var index = 0
+
+        while index < tokens.count {
+            let token = tokens[index]
+            index += 1
+
+            if token.hasPrefix("-") {
+                guard token.count > 1, let type = forwardType(for: String(token.prefix(2))) else { continue }
+                var value = String(token.dropFirst(2))
+                if value.isEmpty {
+                    guard index < tokens.count else { break }
+                    value = tokens[index]
+                    index += 1
+                }
+                if let entry = parseForwardArgument(value, type: type) { entries.append(entry) }
+            } else if let entry = parseTunnelLine(token) {
+                entries.append(entry)
+            } else if let entry = parseForwardArgument(token, type: .local) {
+                entries.append(entry)
+            }
+        }
+        return entries
+    }
+
+    private static func forwardType(for flag: String) -> TunnelType? {
+        switch flag {
+        case "-L": .local
+        case "-R": .remote
+        case "-D": .dynamic
+        default: nil
+        }
+    }
+
+    /// Parses `[bind:]port:host:hostport` (-L/-R) or `[bind:]port` (-D).
+    private static func parseForwardArgument(_ argument: String, type: TunnelType) -> TunnelEntry? {
+        let parts = argument.split(separator: ":", omittingEmptySubsequences: false).map(String.init)
+        var entry = TunnelEntry()
+        entry.type = type
+
+        switch type {
+        case .local, .remote:
+            switch parts.count {
+            case 3:
+                guard let localPort = UInt16(parts[0]), let remotePort = UInt16(parts[2]) else { return nil }
+                entry.localPort = localPort
+                entry.remoteHost = parts[1]
+                entry.remotePort = remotePort
+            case 4:
+                guard let localPort = UInt16(parts[1]), let remotePort = UInt16(parts[3]) else { return nil }
+                entry.bindAddress = parts[0]
+                entry.localPort = localPort
+                entry.remoteHost = parts[2]
+                entry.remotePort = remotePort
+            default:
+                return nil
+            }
+        case .dynamic:
+            switch parts.count {
+            case 1:
+                guard let localPort = UInt16(parts[0]) else { return nil }
+                entry.localPort = localPort
+            case 2:
+                guard let localPort = UInt16(parts[1]) else { return nil }
+                entry.bindAddress = parts[0]
+                entry.localPort = localPort
+            default:
+                return nil
+            }
+        }
+
+        if type != .dynamic && entry.remoteHost.isEmpty { return nil }
+        return entry
+    }
+
+    /// Splits a command line on whitespace, honoring quotes and line continuations.
+    /// Backslashes are literal so that Windows paths survive round-tripping.
+    private static func tokenize(_ input: String) -> [String] {
+        let joined = input
+            .replacingOccurrences(of: "\\\r\n", with: " ")
+            .replacingOccurrences(of: "\\\n", with: " ")
+        var tokens: [String] = []
+        var current = ""
+        var hasToken = false
+        var quote: Character?
+
+        for character in joined {
+            if let open = quote {
+                if character == open { quote = nil } else { current.append(character) }
+                hasToken = true
+                continue
+            }
+            if character == "\"" || character == "'" {
+                quote = character
+                hasToken = true
+                continue
+            }
+            if character.isWhitespace {
+                if hasToken { tokens.append(current) }
+                current = ""
+                hasToken = false
+                continue
+            }
+            current.append(character)
+            hasToken = true
+        }
+        if hasToken { tokens.append(current) }
+        return tokens
     }
 }

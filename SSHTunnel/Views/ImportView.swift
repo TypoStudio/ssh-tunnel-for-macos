@@ -13,7 +13,7 @@ struct ImportView: View {
             Text(String(localized: "Import Tunnel Configuration"))
                 .font(.headline)
 
-            Text(String(localized: "Paste the share string below:"))
+            Text(String(localized: "Paste a share string or ssh command below:"))
                 .foregroundStyle(.secondary)
 
             TextEditor(text: $inputText)
@@ -24,13 +24,13 @@ struct ImportView: View {
                     decoded = ShareService.decode(newValue)
                     errorMessage = nil
                     if !newValue.isEmpty && decoded == nil {
-                        errorMessage = String(localized: "Invalid share string format.")
+                        errorMessage = String(localized: "Invalid share string or ssh command.")
                     }
                 }
                 .onAppear {
                     // Auto-fill from clipboard if it contains a share string
                     if let clip = NSPasteboard.general.string(forType: .string),
-                       clip.hasPrefix("sshtunnel://") {
+                       clip.hasPrefix("sshtunnel://") || clip.hasPrefix("ssh ") {
                         inputText = clip
                     }
                 }

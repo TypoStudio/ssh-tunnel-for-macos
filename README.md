@@ -67,6 +67,8 @@ xcodebuild -project SSHTunnel.xcodeproj -scheme SSHTunnel -configuration Release
 - [x] Share tunnel configs as `sshtunnel://` URLs
 - [x] Import configs from share strings
 - [x] Copy equivalent CLI command (`ssh -L ...`)
+- [x] Create a tunnel config from an `ssh` command line
+- [x] Add port forwarding rules from CLI options (`-L` / `-R` / `-D`)
 - [x] URL scheme handler for one-click import
 
 ### Menu Bar

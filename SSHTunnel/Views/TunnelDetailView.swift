@@ -12,6 +12,7 @@ struct TunnelDetailView: View {
     @Environment(\.openWindow) private var openWindow
     @State private var showSSHConfig = false
     @State private var portConflictAlert = false
+    @State private var showForwardingImport = false
     @State private var conflictingPorts: [UInt16] = []
 
     private var state: ConnectionState {
@@ -69,10 +70,18 @@ struct TunnelDetailView: View {
                     }
                 }
 
-                Button {
-                    draft.tunnels.append(TunnelEntry())
-                } label: {
-                    Label(String(localized: "Add Rule"), systemImage: "plus")
+                HStack {
+                    Button {
+                        draft.tunnels.append(TunnelEntry())
+                    } label: {
+                        Label(String(localized: "Add Rule"), systemImage: "plus")
+                    }
+
+                    Button {
+                        showForwardingImport = true
+                    } label: {
+                        Label(String(localized: "Add from CLI"), systemImage: "terminal")
+                    }
                 }
             }
 
@@ -167,6 +176,11 @@ struct TunnelDetailView: View {
                     }
                 }
                 .disabled(draft.host.isEmpty || draft.username.isEmpty || draft.tunnels.isEmpty)
+            }
+        }
+        .sheet(isPresented: $showForwardingImport) {
+            ForwardingImportView { entries in
+                draft.tunnels.append(contentsOf: entries)
             }
         }
         .sheet(isPresented: $showSSHConfig) {
@@ -309,6 +323,70 @@ struct SSHConfigPickerView: View {
         .frame(width: 400, height: 350)
         .onAppear {
             hosts = SSHConfigParser.parse()
+        }
+    }
+}
+
+// MARK: - Forwarding Import Sheet
+
+struct ForwardingImportView: View {
+    let onAdd: ([TunnelEntry]) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var inputText = ""
+
+    private var parsed: [TunnelEntry] {
+        ShareService.parseForwardingEntries(inputText)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(String(localized: "Add Port Forwarding from CLI"))
+                .font(.headline)
+
+            Text(String(localized: "Paste ssh forwarding options, for example: -L 8080:localhost:80 -D 1080"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            TextEditor(text: $inputText)
+                .font(.system(.body, design: .monospaced))
+                .frame(height: 80)
+                .border(.separator)
+
+            if parsed.isEmpty {
+                if !inputText.isEmpty {
+                    Text(String(localized: "No forwarding rules found."))
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+            } else {
+                ForEach(parsed) { entry in
+                    Text("\(entry.type.displayName): \(entry.sshArgument)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            HStack {
+                Button(String(localized: "Cancel")) { dismiss() }
+                    .keyboardShortcut(.cancelAction)
+
+                Spacer()
+
+                Button(String(localized: "Add")) {
+                    onAdd(parsed)
+                    dismiss()
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(parsed.isEmpty)
+            }
+        }
+        .padding()
+        .frame(width: 420)
+        .onAppear {
+            if let clip = NSPasteboard.general.string(forType: .string),
+               !ShareService.parseForwardingEntries(clip).isEmpty {
+                inputText = clip
+            }
         }
     }
 }
