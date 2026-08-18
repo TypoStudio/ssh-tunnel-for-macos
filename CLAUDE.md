@@ -228,6 +228,19 @@ git add -A && git commit -m "Bump version to x.y.z" && git push origin main
 gh release create vx.y.z /tmp/SSHTunnel-x.y.z.dmg --title "vx.y.z" --notes "릴리즈 노트"
 ```
 
+### 6. Homebrew cask 갱신
+
+`brew`가 읽는 cask는 이 저장소가 아니라 **별도 저장소** `typostudio/homebrew-tap`의 `Casks/sshtunnel.rb` 하나뿐이다.
+이 단계를 빼먹으면 릴리즈를 올려도 brew 사용자에게는 업데이트가 나가지 않는다. 이 저장소에 cask 사본을 두지 말 것.
+
+```bash
+TAP=/opt/homebrew/Library/Taps/typostudio/homebrew-tap
+SHA=$(shasum -a 256 /tmp/SSHTunnel-x.y.z.dmg | awk '{print $1}')
+sed -i '' "s/version \"[^\"]*\"/version \"x.y.z\"/; s/sha256 \"[^\"]*\"/sha256 \"$SHA\"/" "$TAP/Casks/sshtunnel.rb"
+(cd "$TAP" && git add Casks/sshtunnel.rb && git commit -m "sshtunnel x.y.z" && git push origin main)
+brew update && brew info sshtunnel   # "이전버전 → x.y.z" 로 뜨는지 확인
+```
+
 ## 주의사항
 
 - 새 Codable 필드 추가 시 **반드시** `decodeIfPresent`로 기본값 fallback (기존 데이터 손실 방지)
