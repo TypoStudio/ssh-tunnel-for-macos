@@ -1,6 +1,6 @@
 cask "sshtunnel" do
-  version "1.5.3"
-  sha256 "45c71648a170f867483601c64eea36b405e7193e5ae792c6a023ba3bb229991d"
+  version "1.6.0"
+  sha256 "4821c117982b7955cdebb17d3508333dbb181dfa7b215c733d0b1c71de6fe190"
 
   url "https://github.com/TypoStudio/ssh-tunnel-for-macos/releases/download/v#{version}/SSHTunnel-#{version}.dmg"
   name "SSHTunnel"
