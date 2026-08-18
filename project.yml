@@ -11,7 +11,12 @@ targets:
     type: application
     platform: macOS
     sources:
-      - SSHTunnel
+      - path: SSHTunnel
+        excludes:
+          # 에이전트 툴링이 소스 폴더에 남기는 상태 디렉터리.
+          # 포함되면 Xcode가 리소스로 중복 복사하려다 빌드가 깨진다.
+          - "**/.omc/**"
+          - "**/.claude/**"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: kr.typostudio.sshtunnel
