@@ -18,16 +18,15 @@ struct MenuBarView: View {
                 Button {
                     processManager.toggle(config)
                 } label: {
-                    HStack {
-                        Image(systemName: state == .connected ? "circle.fill" : "circle")
-                            .foregroundStyle(state.color)
+                    // 메뉴 항목은 NSMenuItem으로 변환되어 HStack 레이아웃이 버려진다.
+                    // 제목은 한 줄로 합치고, 아이콘은 titleAndIcon으로 명시해야 표시된다.
+                    Label {
                         Text(config.name.isEmpty ? config.host : config.name)
-                        Spacer()
-                        Text(state.label)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    } icon: {
+                        statusDot(state)
                     }
                 }
+                .labelStyle(.titleAndIcon)
             }
         }
 
@@ -77,6 +76,18 @@ struct MenuBarView: View {
             }
         }
         .keyboardShortcut("q")
+    }
+
+    /// SF Symbol은 메뉴에서 template로 그려져 색이 무시되므로, 상태 점은 직접 그린 이미지를 쓴다.
+    private func statusDot(_ state: ConnectionState) -> some View {
+        let size = NSSize(width: 10, height: 10)
+        let image = NSImage(size: size, flipped: false) { rect in
+            NSColor(state.color).setFill()
+            NSBezierPath(ovalIn: rect).fill()
+            return true
+        }
+        image.isTemplate = false
+        return Image(nsImage: image).renderingMode(.original)
     }
 
     func openManagerIfNeeded() {
